@@ -1,11 +1,14 @@
-ESP-IDF template app
+Esp32_M
 ====================
 
-This is a template application to be used with [Espressif IoT Development Framework](https://github.com/espressif/esp-idf).
+Board Information:
+| Board | Module | Chip | Flash | PSRAM | Ant. |
+|:---|:---|:---|:---|:---|:---|
+| Esp32 | ESP-WROOM32 | ESP32-D0WDQ6 | 4MB | Null | MIFA |
 
-Please check [ESP-IDF docs](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for getting started instructions.
-
-*Code in this repository is in the Public Domain (or CC0 licensed, at your option.)
-Unless required by applicable law or agreed to in writing, this
-software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.*
+Project Information:
+* NVS.
+* Wifi(ap/sta mode.)
+* Http Server.
+* Oled driver(128x32).
+* Simple game(打飞机).-这个还没做完.写了基本显示逻辑.
