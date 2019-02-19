@@ -1,0 +1,30 @@
+# put here your custom config value
+menu "Example Configuration"
+config APSTA_STA_SSID
+    string "WiFi SSID"
+    default "myssid"
+    help
+	SSID (network name) for the example to connect to.
+
+config APSTA_STA_PASSWORD
+    string "WiFi Password"
+    default "mypassword"
+    help
+	WiFi password (WPA or WPA2) for the example to use.
+
+config APSTA_AP_SSID
+    string "AP SSID"
+    default "MTemp"
+
+config APSTA_AP_PASSWORD
+    string "AP Password"
+    default "M10240000"
+
+config OLED_I2C_SDA 
+    int "OLED I2C SDA Gpio"
+    default 22 
+
+config OLED_I2C_SCL 
+    int "OLED I2C SCL Gpio"
+    default 23 
+endmenu

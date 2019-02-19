@@ -1,0 +1,55 @@
+<html>
+
+<head>
+	<title>M-Esp32</title>
+	<script type="text/javascript">
+		function LoadAPs() {
+			var x = new XMLHttpRequest()
+			x.open("POST", "/wifi", true)
+			x.send()
+			x.onreadystatechange = function () {
+				switch (x.readyState) {
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+						console.log(x.readyState)
+						break;
+					case 4:
+						console.log(x.readyState)
+						console.log("Status:", x.status)
+						if (200 == x.status) {
+							console.log("Type:", x.responseType)
+							console.log("XML:", x.responseXML)
+							console.log("Text:", x.responseText)
+							var aps = document.getElementById("aps")
+							x.onload = function() {
+								aps.innerHTML = x.responseText
+							}
+						}
+						break;
+					default:
+						console.log("Error readyState:", x.readyState)
+						break;
+				}
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<div>Hello Esp32.</div>
+	<div><a href="/plane">Plane</a></div>
+	<div>
+		<p>Set wifi connect:</p>
+		<form action="/wifi?" method="POST">
+			SSID:<input type="text" name="ssid" />
+			Password:<input type="text" name="passwd" />
+			<input type="submit" value="Set Wifi">
+		</form>
+	</div>
+	<div id="aps"></div>
+	<div><button onclick="LoadAPs()">LoadAP</button></div>
+</body>
+
+</html>
