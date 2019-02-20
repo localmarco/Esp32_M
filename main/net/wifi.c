@@ -86,10 +86,12 @@ esp_err_t init_esp_wifi() {
     };
 	err = nvs_get_str_by_key(NVS_AP_SSID_KEY, ssid, 32);
 	if (ESP_OK == err) {
+		memset(ap_config.sta.ssid, 0x00, 32);
 		memcpy(ap_config.sta.ssid, ssid, strlen(ssid));
 	}
 	err = nvs_get_str_by_key(NVS_AP_PASSWD_KEY, passwd, 64);
 	if (ESP_OK == err) {
+		memset(ap_config.sta.password, 0x00, 64);
 		memcpy(ap_config.sta.password, passwd, strlen(passwd));
 	}
     ESP_LOGI(TAG, "Connect AP Info [%s][%s]", ap_config.ap.ssid, ap_config.sta.password);
