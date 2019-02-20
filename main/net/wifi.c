@@ -2,6 +2,11 @@
 
 #define SIZEOF(_x) (sizeof(_x)/sizeof(_x[0]))
 
+#define NVS_STA_SSID_KEY "stassid"
+#define NVS_STA_PASSWD_KEY "stapasswd"
+#define NVS_AP_SSID_KEY "apssid"
+#define NVS_AP_PASSWD_KEY "appasswd"
+
 static const char *TAG = "[Wifi]";
 
 esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -48,6 +53,8 @@ esp_err_t init_esp_wifi() {
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_APSTA) );
+	char ssid[32] = {0x00};
+	char passwd[64] = {0x00};
     wifi_config_t sta_config = {
         .sta = {
             .ssid = STA_SSID,
@@ -55,17 +62,37 @@ esp_err_t init_esp_wifi() {
             .bssid_set = false
         }
     };
+	/* Get ssid by nvs */
+	esp_err_t err = nvs_get_str_by_key(NVS_STA_SSID_KEY, ssid, 32);
+	if (ESP_OK == err) {
+		memset(sta_config.sta.ssid, 0x00, 32);
+		memcpy(sta_config.sta.ssid, ssid, strlen(ssid));
+	}
+	err = nvs_get_str_by_key(NVS_STA_PASSWD_KEY, passwd, 64);
+	if (ESP_OK == err) {
+		memset(sta_config.sta.password, 0x00, 64);
+		memcpy(sta_config.sta.password, passwd, strlen(passwd));
+	}
+    ESP_LOGI(TAG, "Connect STA Info [%s][%s]", sta_config.sta.ssid, sta_config.sta.password);
+    ESP_ERROR_CHECK( esp_wifi_set_config( WIFI_IF_STA, &sta_config) );
     wifi_config_t ap_config = {
         .ap = {
             .ssid = AP_SSID,
             .password = AP_PASSWORD,
             .ssid_len = 0,
-            .max_connection = 1,
+            .max_connection = 2,
             .authmode = WIFI_AUTH_WPA2_PSK
         }
     };
-    ESP_LOGI(TAG, "Connect SSID [%s][%s]", sta_config.sta.ssid, sta_config.sta.password);
-    ESP_ERROR_CHECK( esp_wifi_set_config( WIFI_IF_STA, &sta_config) );
+	err = nvs_get_str_by_key(NVS_AP_SSID_KEY, ssid, 32);
+	if (ESP_OK == err) {
+		memcpy(ap_config.sta.ssid, ssid, strlen(ssid));
+	}
+	err = nvs_get_str_by_key(NVS_AP_PASSWD_KEY, passwd, 64);
+	if (ESP_OK == err) {
+		memcpy(ap_config.sta.password, passwd, strlen(passwd));
+	}
+    ESP_LOGI(TAG, "Connect AP Info [%s][%s]", ap_config.ap.ssid, ap_config.sta.password);
     ESP_ERROR_CHECK( esp_wifi_set_config( WIFI_IF_AP, &ap_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
     ESP_ERROR_CHECK( esp_wifi_connect() );
@@ -110,12 +137,56 @@ static esp_err_t http_get_plane_right(httpd_req_t *req) {
     return ESP_OK;
 }
 
+static esp_err_t http_post_wifi(httpd_req_t *req) {
+	ESP_LOGI(TAG, " http post wifi");
+    char buf[100] = {0x00};
+    int ret, remaining = req->content_len;
+
+    while (remaining > 0) {
+        /* Read the data for the request */
+        if ((ret = httpd_req_recv(req, buf,
+                        MIN(remaining, sizeof(buf)))) <= 0) {
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                /* Retry receiving if timeout occurred */
+                continue;
+            }
+            return ESP_FAIL;
+        }
+        remaining -= ret;
+        /* Log data received */
+        ESP_LOGI(TAG, "=========== RECEIVED DATA ==========");
+        ESP_LOGI(TAG, "%.*s", ret, buf);
+        ESP_LOGI(TAG, "====================================");
+    }
+	ESP_LOGI(TAG, "Buff len %d", strlen(buf));
+	if (strlen(buf) > 0) {
+		char *r1,*r2;
+		r1 = strtok(buf, "&");
+		r2 = strtok(NULL, "&");
+		if (strncmp(strtok(r1, "="), "ssid", strlen("ssid")) == 0) {
+			nvs_set_str_by_key(NVS_STA_SSID_KEY, strtok(NULL, "="));
+		}
+		if (strncmp(strtok(r2, "="), "passwd", strlen("passwd")) == 0) {
+			nvs_set_str_by_key(NVS_STA_PASSWD_KEY, strtok(NULL, "="));
+		}
+	}
+    // End response
+    //httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
 httpd_uri_t basic_handlers[] = {
 	{
 		.uri       = "/",
 		.method    = HTTP_GET,
 		.handler   = http_get_index,
 		.user_ctx  = NULL 
+	},
+	{
+		.uri       = "/wifi",
+		.method    = HTTP_POST,
+		.handler   = http_post_wifi,
+		.user_ctx  = NULL
 	},
 	{
 		.uri       = "/plane",

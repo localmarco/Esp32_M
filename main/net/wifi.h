@@ -1,6 +1,7 @@
 #ifndef __WIFI_H
 #define __WIFI_H
 
+#include <sys/param.h>
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -9,6 +10,8 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "esp_http_server.h"
+
+#include "nvs.h"
 
 #define STA_SSID CONFIG_APSTA_STA_SSID
 #define STA_PASSWORD CONFIG_APSTA_STA_PASSWORD

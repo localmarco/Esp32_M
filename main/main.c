@@ -14,18 +14,6 @@
 
 #define TAG "[MAIN]"
 
-static esp_err_t nvs_storage() {
-    nvs_handle my_handle;
-    esp_err_t err = nvs_open("storage", NVS_READWRITE, &my_handle);
-    if (err != ESP_OK) {
-        ESP_LOGI(TAG, "Error (%s) opening NVS handle!\n", esp_err_to_name(err));
-    } else {
-        nvs_close(my_handle);
-        ESP_LOGI(TAG,"Done\n");
-	}
-	return err;
-}
-
 void app_main(void) {
 	esp_err_t ret = ESP_OK;
 	ret = nvs_flash_init();
@@ -38,12 +26,10 @@ void app_main(void) {
     /* Start Http server */
 	ret = start_http_server();
     ESP_ERROR_CHECK( ret );
-#if 1
+
     /* Init OLED Display. */
     ret = OLED_init();
     /* Game */
     if (ESP_OK == ret)
         GameStart();
-#endif
-	nvs_storage();
 }
