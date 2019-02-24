@@ -1,14 +1,31 @@
 #include "game.h"
 
-#include "img/logo.h"
-#include "../oled/oled.h"
-
 #define DEBUG 1
 
-//#define BIT(_n) (1 << (_n))
-#define GET_BIT(_r, _b) ((_r) & (_b))
-#define SET_BIT(_r, _b) ((_r) |= (_b))
-#define CLR_BIT(_r, _b) ((_r) &= ~(_b))
+#if 1 //def CONFIG_IDF_TARGET_ESP32
+#include "img/logo.h"
+#include "../oled/oled.h"
+#define RANDOM() esp_random()
+#else
+#include "logo.h"
+#define RANDOM() random()
+#endif
+
+#define BIT(_n) (1 << (_n))
+#define GET_BIT(_r, _b) ((_r)>>(_b) & 1)
+#define SET_BIT(_r, _b) ((_r) |= BIT(_b))
+#define CLR_BIT(_r, _b) ((_r) &= ~BIT(_b))
+
+
+#define CLEAR() printf("\33[2J")
+#define MOVE_UP(x) printf("\33[%dA", (x))
+#define MOVE_DOWN(x) printf("\033[%dB", (x))
+#define MOVE_LEFT(y) printf("\033[%dD", (y))
+#define MOVE_RIGHT(y) printf("\033[%dC",(y))
+#define MOVE_TO(x,y) printf("\033[%d;%dH", (x), (y))
+#define RESET_CURSOR() printf("\033[H")
+#define HIDE_CURSOR() printf("\033[?25l") 
+#define SHOW_CURSOR() printf("\033[?25h") 
 
 /* plane
 Hero
@@ -39,10 +56,24 @@ struct block {
     unsigned char w;
     unsigned char h;
     unsigned char img[];
-}plane = {5, 5, {0x21, 0x1D, 0xF5, 0x00}}, hero = {5, 4, {0x71, 0x3E, 0x40}}, bullet = {1, 1, {0x80}}, boss={7, 5, {0x10, 0x71, 0xF7, 0xF5, 0xC0}};
+//}plane = {5, 5, {0x21, 0x1D, 0xF5, 0x00}}, hero = {5, 4, {0x71, 0x3E, 0x40}}, bullet = {1, 1, {0x80}}, boss={7, 5, {0x10, 0x71, 0xF7, 0xF5, 0xC0}};
+}plane = {8, 4, {0x66, 0xFF, 0x3C, 0x18}}, hero = {8, 4, {0x18, 0xFF, 0x18, 0x3C}}, bullet = {1, 1, {0x80}} ;
 
-static unsigned char game_map[ MAP_SIZE ] = {0x00};
+static unsigned char *game_map = NULL;
 static G_BLOCK *bl = NULL;
+
+#if 0 //ndef CONFIG_IDF_TARGET_ESP32
+static void OLED_fill_surface(unsigned char *p) {
+	for (int w = 0; w < MAP_WIDTH; w++) {
+		for (int h = 0; h < MAP_HEIGHT; h++) {
+			printf("%d", GET_BIT(game_map[(w / 8) * 128 + h], w % 8));
+		}
+		printf("\n");
+	}
+	MOVE_UP(MAP_WIDTH);
+	fflush(stdout);
+}
+#endif
 
 static void add_block(int x, int y, B_TYPE type) {
 	G_BLOCK *t = bl;
@@ -73,8 +104,10 @@ static void remove_block(G_BLOCK *b) {
 		t = t->next;
 	}
 }
+
 static void free_blocks() {
 	G_BLOCK *t = bl;
+	/* free block list. */
 	while( t ) {
 		G_BLOCK *t1 = t;
 		t = t->next;
@@ -82,32 +115,30 @@ static void free_blocks() {
 		t1 = NULL;
 	}
 	bl = NULL;
+	/* free map */
+	if (NULL != game_map) {
+		free(game_map);
+		game_map = NULL;
+	}
 }
 
 static void GameInit() {
-	/* malloc hero.*/
+	game_map = (unsigned char*) malloc(MAP_SIZE * sizeof (unsigned char));
+	if (NULL == game_map) {
+		return;
+	}
+	/* malloc hear.*/
 	bl = (G_BLOCK*) malloc (sizeof(G_BLOCK));
 	if (NULL == bl) {
 		return;
 	}
-#ifdef DEBUG
-	bl->x = esp_random() & 0x1F;
-	bl->y = esp_random() & 0x7F;
-#else
 	bl->x = 0;
 	bl->y = 0;
-#endif
 	bl->a.s.type = TYPE_HERO;
 	bl->next = NULL;
 	/* malloc plane.*/
 	for (int i = 0; i < 5; i++) {
-		add_block(esp_random() & 0x1F, 127, TYPE_PLANE);
-	}
-	for (int i = 0; i < 1; i++) {
-		add_block(esp_random() & 0x1F, 127, TYPE_BOSS);
-	}
-	for (int i = 0; i < 10; i++) {
-		add_block(esp_random() & 0x1F, 0, TYPE_BULLET);
+		add_block(RANDOM() & 0x1F, 127, TYPE_PLANE);
 	}
 }
 
@@ -117,21 +148,18 @@ static void update_blocks() {
 		switch (t->a.s.type)
 		{
 			case TYPE_BULLET:
-				if ( 127 < (t->y + 3)) {
+				t->y += 3;
+				if (MAP_HEIGHT < t->y) 
 					t->y = 0;
-				} else {
-					t->y += 3;
-				}
 				break;
 			case TYPE_BOSS:
 			case TYPE_PLANE:
-				if (0 >= (t->y - 3)) {
+				t->y -= esp_random() & 0x03;
+				if (MAP_HEIGHT < t->y) 
 					t->y = 127;
-				}else{
-					t->y -= esp_random() & 0x03;
-				}
 				break;
 			case TYPE_HERO:
+
 				/* Hero conrtol by user.*/
 				break;
 			default:
@@ -145,10 +173,10 @@ static void update_blocks() {
 static void draw_block(unsigned int x, unsigned int y, struct block *b) {
 	for(int y1 = 0; y1< b->h; y1++) {
 		for (int x1 = 0; x1< b->w; x1++) {
-			if ((((x+x1)/8)*128 + y + y1) < 512) {
-				GET_BIT(b->img[(y1 * b->w + x1) / 8], BIT(7 - (y1 * b->w + x1) % 8))?  
-					SET_BIT(game_map[((x+x1)/8)*128 + y + y1], BIT((x + x1)% 8)) : 
-					CLR_BIT(game_map[((x+x1)/8)*128 + y + y1], BIT((x + x1)% 8)) ;
+			if ( (y1 + y) < MAP_HEIGHT && (x1 + x) < MAP_WIDTH) {
+				GET_BIT(b->img[y1], x1)?  
+					SET_BIT(game_map[((x+x1)/8)*128 + y + y1], (x + x1) % 8) : 
+					CLR_BIT(game_map[((x+x1)/8)*128 + y + y1], (x + x1) % 8) ;
 			}
 		}
 	}
@@ -170,7 +198,7 @@ static void update_surface() {
 				draw_block(t->x, t->y, &bullet);
 				break;
 			case TYPE_BOSS:
-				draw_block(t->x, t->y, &boss);
+				//draw_block(t->x, t->y, &boss);
 				break;
 			default:
 				LOG("--- Type Undefined... ---");
