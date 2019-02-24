@@ -9,9 +9,9 @@
 #else
 #include "logo.h"
 #define RANDOM() random()
+#define BIT(_n) (1 << (_n))
 #endif
 
-#define BIT(_n) (1 << (_n))
 #define GET_BIT(_r, _b) ((_r)>>(_b) & 1)
 #define SET_BIT(_r, _b) ((_r) |= BIT(_b))
 #define CLR_BIT(_r, _b) ((_r) &= ~BIT(_b))
@@ -30,34 +30,35 @@
 /* plane
 Hero
 00100
-11111   01110001
-00100   00111110
-01110   0100   
-unsigned char hero_img[] = {0x71, 0x3E, 0x40};
+11111
+00100
+01110
+unsigned char hero_img[] = {0x27, 0xC8, 0xE0};
 
 Plane
 01010
 11111
 01110
-00100  
-00100 = 00100001 00011101 11110101 0
-unsigned char plane[] = {0x21, 0x1D, 0xF5, 0x00};
+00100
+00100 
+unsigned char plane[] = {0x57, 0xDC, 0x42, 0x00};
 
 Boss
 0110110
 1111111
 0111110
 0011100
-0001000  = 00010000 01110001 11110111 11110110 110
-unsigned char plane[] = {0x10, 0x71, 0xF7, 0xF5, 0xC0};
+0001000
+unsigned char plane[] = {0x6D, 0xFD, 0xF1, 0xC1, 0x00};
 */
 
 struct block {
     unsigned char w;
     unsigned char h;
     unsigned char img[];
-//}plane = {5, 5, {0x21, 0x1D, 0xF5, 0x00}}, hero = {5, 4, {0x71, 0x3E, 0x40}}, bullet = {1, 1, {0x80}}, boss={7, 5, {0x10, 0x71, 0xF7, 0xF5, 0xC0}};
-}plane = {8, 4, {0x66, 0xFF, 0x3C, 0x18}}, hero = {8, 4, {0x18, 0xFF, 0x18, 0x3C}}, bullet = {1, 1, {0x80}} ;
+}plane = {5, 5, {0x21, 0x1D, 0xF5, 0x00}}, hero = {5, 4, {0x71, 0x3E, 0x40}}, bullet = {1, 1, {0x80}}, boss={7, 5, {0x10, 0x71, 0xF7, 0xF5, 0xC0}};
+//}plane = {8, 4, {0x66, 0xFF, 0x3C, 0x18}}, hero = {8, 4, {0x18, 0xFF, 0x18, 0x3C}}, bullet = {1, 1, {0x80}} ;
+//}plane = {5, 5, {0x57, 0xDC, 0x42, 0x00}}, hero = {5, 4, {0x27, 0xC8, 0xE0}}, bullet = {1, 1, {0x80}}, boss={7, 5, {0x6D, 0xFD, 0xF1, 0xC1, 0x00}};
 
 static unsigned char *game_map = NULL;
 static G_BLOCK *bl = NULL;
@@ -174,7 +175,7 @@ static void draw_block(unsigned int x, unsigned int y, struct block *b) {
 	for(int y1 = 0; y1< b->h; y1++) {
 		for (int x1 = 0; x1< b->w; x1++) {
 			if ( (y1 + y) < MAP_HEIGHT && (x1 + x) < MAP_WIDTH) {
-				GET_BIT(b->img[y1], x1)?  
+				GET_BIT(b->img[(y1 * b->w + x1) / 8], (7 - (y1 * b->w + x1) % 8))?  
 					SET_BIT(game_map[((x+x1)/8)*128 + y + y1], (x + x1) % 8) : 
 					CLR_BIT(game_map[((x+x1)/8)*128 + y + y1], (x + x1) % 8) ;
 			}
