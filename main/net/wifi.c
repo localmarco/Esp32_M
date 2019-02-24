@@ -121,21 +121,25 @@ static esp_err_t http_get_plane(httpd_req_t *req) {
 
 static esp_err_t http_get_plane_up(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Up");
+	update_hero(C_UP);
     return ESP_OK;
 }
 
 static esp_err_t http_get_plane_down(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Down");
+	update_hero(C_DOWN);
     return ESP_OK;
 }
 
 static esp_err_t http_get_plane_left(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Left");
+	update_hero(C_LEFT);
     return ESP_OK;
 }
 
 static esp_err_t http_get_plane_right(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Right");
+	update_hero(C_RIGHT);
     return ESP_OK;
 }
 

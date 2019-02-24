@@ -12,6 +12,7 @@
 #include "esp_http_server.h"
 
 #include "nvs.h"
+#include "game.h"
 
 #define STA_SSID CONFIG_APSTA_STA_SSID
 #define STA_PASSWORD CONFIG_APSTA_STA_PASSWORD

@@ -62,6 +62,8 @@ struct block {
 
 static unsigned char *game_map = NULL;
 static G_BLOCK *bl = NULL;
+static unsigned int hero_x = 0;
+static unsigned int hero_y = 0;
 
 #if 0 //ndef CONFIG_IDF_TARGET_ESP32
 static void OLED_fill_surface(unsigned char *p) {
@@ -134,7 +136,7 @@ static void GameInit() {
 		return;
 	}
 	bl->x = 0;
-	bl->y = 0;
+	bl->y = 64;
 	bl->a.s.type = TYPE_HERO;
 	bl->next = NULL;
 	/* malloc plane.*/
@@ -160,7 +162,8 @@ static void update_blocks() {
 					t->y = 127;
 				break;
 			case TYPE_HERO:
-
+				t->x = hero_x;
+				t->y = hero_y;
 				/* Hero conrtol by user.*/
 				break;
 			default:
@@ -168,6 +171,29 @@ static void update_blocks() {
 				break;
 		}
 		t = t->next;
+	}
+}
+
+void update_hero(C_ACTION a) {
+	switch(a) {
+		case C_UP:
+			if (hero_y < MAP_HEIGHT - 1) 
+				hero_y += 1;
+			break;
+		case C_DOWN:
+			if (hero_y > 1) 
+				hero_y -= 1;
+			break;
+		case C_LEFT:
+			if (hero_x > 0) 
+				hero_x -= 1;
+			break;
+		case C_RIGHT:
+			if (hero_x < MAP_WIDTH -1 ) 
+				hero_x += 1;
+			break;
+		default:
+			break;
 	}
 }
 

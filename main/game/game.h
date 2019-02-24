@@ -19,6 +19,13 @@ typedef enum _block_type {
 	TYPE_BOSS
 }B_TYPE;
 
+typedef enum _action {
+	C_UP = 0,
+	C_DOWN,
+	C_LEFT,
+	C_RIGHT
+}C_ACTION;
+
 typedef union game_action {
 	unsigned char c;
 	struct s_action {
@@ -39,5 +46,6 @@ typedef struct _base_block {
 } G_BLOCK; 
 
 void GameStart();
+void update_hero(C_ACTION a);
 
 #endif
