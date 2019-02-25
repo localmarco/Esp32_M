@@ -38,7 +38,7 @@ unsigned char hero_img[] = {0x27, 0xC8, 0xE0};
 Plane
 01010
 11111
-01110
+1110
 00100
 00100 
 unsigned char plane[] = {0x57, 0xDC, 0x42, 0x00};
@@ -175,22 +175,23 @@ static void update_blocks() {
 }
 
 void update_hero(C_ACTION a) {
+	const int step = 2;
 	switch(a) {
 		case C_UP:
-			if (hero_y < MAP_HEIGHT - 1) 
-				hero_y += 1;
+			if (hero_y < MAP_HEIGHT - step) 
+				hero_y += step;
 			break;
 		case C_DOWN:
-			if (hero_y > 1) 
-				hero_y -= 1;
+			if (hero_y > step) 
+				hero_y -= step;
 			break;
 		case C_LEFT:
-			if (hero_x > 0) 
-				hero_x -= 1;
+			if (hero_x > step) 
+				hero_x -= step;
 			break;
 		case C_RIGHT:
-			if (hero_x < MAP_WIDTH -1 ) 
-				hero_x += 1;
+			if (hero_x < MAP_WIDTH ) 
+				hero_x += step;
 			break;
 		default:
 			break;
