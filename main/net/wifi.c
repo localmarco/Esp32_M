@@ -119,27 +119,38 @@ static esp_err_t http_get_plane(httpd_req_t *req) {
     return ESP_OK;
 }
 
-static esp_err_t http_get_plane_up(httpd_req_t *req) {
+static esp_err_t http_put_plane_up(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Up");
 	update_hero(C_UP);
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-static esp_err_t http_get_plane_down(httpd_req_t *req) {
+static esp_err_t http_put_plane_down(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Down");
 	update_hero(C_DOWN);
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-static esp_err_t http_get_plane_left(httpd_req_t *req) {
+static esp_err_t http_put_plane_left(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Left");
 	update_hero(C_LEFT);
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-static esp_err_t http_get_plane_right(httpd_req_t *req) {
+static esp_err_t http_put_plane_right(httpd_req_t *req) {
 	ESP_LOGI(TAG, " Action Right");
 	update_hero(C_RIGHT);
+    httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
+static esp_err_t http_put_plane_shoot(httpd_req_t *req) {
+	ESP_LOGI(TAG, " Action Shoot");
+	update_hero(C_SHOOT);
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -202,26 +213,32 @@ httpd_uri_t basic_handlers[] = {
 	},
 	{
 		.uri       = "/plane/up",
-		.method    = HTTP_GET,
-		.handler   = http_get_plane_up,
+		.method    = HTTP_PUT,
+		.handler   = http_put_plane_up,
 		.user_ctx  = NULL
 	},
 	{
 		.uri       = "/plane/down",
-		.method    = HTTP_GET,
-		.handler   = http_get_plane_down,
+		.method    = HTTP_PUT,
+		.handler   = http_put_plane_down,
 		.user_ctx  = NULL
 	},
 	{
 		.uri       = "/plane/left",
-		.method    = HTTP_GET,
-		.handler   = http_get_plane_left,
+		.method    = HTTP_PUT,
+		.handler   = http_put_plane_left,
 		.user_ctx  = NULL
 	},
 	{
 		.uri       = "/plane/right",
-		.method    = HTTP_GET,
-		.handler   = http_get_plane_right,
+		.method    = HTTP_PUT,
+		.handler   = http_put_plane_right,
+		.user_ctx  = NULL
+	},
+	{
+		.uri       = "/plane/shoot",
+		.method    = HTTP_PUT,
+		.handler   = http_put_plane_shoot,
 		.user_ctx  = NULL
 	}
 };

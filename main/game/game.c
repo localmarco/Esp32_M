@@ -157,7 +157,7 @@ static void update_blocks() {
 				break;
 			case TYPE_BOSS:
 			case TYPE_PLANE:
-				t->y -= esp_random() & 0x03;
+				t->y -= 3;
 				if (MAP_HEIGHT < t->y) 
 					t->y = 127;
 				break;

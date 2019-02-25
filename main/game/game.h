@@ -23,7 +23,8 @@ typedef enum _action {
 	C_UP = 0,
 	C_DOWN,
 	C_LEFT,
-	C_RIGHT
+	C_RIGHT,
+	C_SHOOT
 }C_ACTION;
 
 typedef union game_action {

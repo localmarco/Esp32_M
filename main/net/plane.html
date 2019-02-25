@@ -2,22 +2,51 @@
 <head>
 <style>
 #plane{
-    background-color:black;
+    #background-color:black;
     color:white;
     text-align:center;
     padding:5px;
 }
 </style>
+<script type="text/javascript">
+	function setPlaneAction(action) {
+		var x = new XMLHttpRequest()
+		switch(action) {
+			case 0:
+				x.open("PUT", "/plane/up", true)
+				x.send()
+				break;
+			case 1:
+				x.open("PUT", "/plane/left", true)
+				x.send()
+				break;
+			case 2:
+				x.open("PUT", "/plane/right", true)
+				x.send()
+				break;
+			case 3:
+				x.open("PUT", "/plane/down", true)
+				x.send()
+				break;
+			case 4:
+				x.open("PUT", "/plane/shoot", true)
+				x.send()
+				break;
+			default:
+				break;
+		}
+	}
+</script>
 <title>Plane Game Control</title>
 </head>
 
 <body>
 </br>
 <div id="plane">
-<div><form action="/plane/up" method="GET"><input type="submit" value="Up"></form></div>
-<div><form action="/plane/left" method="GET"><input type="submit" value="Left"></form></div>
-<div><form action="/plane/right" method="GET"><input type="submit" value="Right"></form></div>
-<div><form action="/plane/down" method="GET"><input type="submit" value="Down"></form></div>
+	<div><button onclick="setPlaneAction(0)">Up</button></div>
+	<div><button onclick="setPlaneAction(1)">Left</button><button onclick="setPlaneAction(2)">Right</button></div>
+	<div><button onclick="setPlaneAction(3)">Down</button></div>
+	<div><button onclick="setPlaneAction(4)">Shoot</button></div>
 </div>
 </br>
 
