@@ -11,26 +11,22 @@
 <script type="text/javascript">
 	function setPlaneAction(action) {
 		var x = new XMLHttpRequest()
+		x.open("PUT", "/plane/action", true)
 		switch(action) {
 			case 0:
-				x.open("PUT", "/plane/up", true)
-				x.send()
+				x.send("up")
 				break;
 			case 1:
-				x.open("PUT", "/plane/left", true)
-				x.send()
+				x.send("left")
 				break;
 			case 2:
-				x.open("PUT", "/plane/right", true)
-				x.send()
+				x.send("right")
 				break;
 			case 3:
-				x.open("PUT", "/plane/down", true)
-				x.send()
+				x.send("down")
 				break;
 			case 4:
-				x.open("PUT", "/plane/shoot", true)
-				x.send()
+				x.send("shoot")
 				break;
 			default:
 				break;

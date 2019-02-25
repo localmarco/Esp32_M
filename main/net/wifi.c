@@ -119,37 +119,36 @@ static esp_err_t http_get_plane(httpd_req_t *req) {
     return ESP_OK;
 }
 
-static esp_err_t http_put_plane_up(httpd_req_t *req) {
-	ESP_LOGI(TAG, " Action Up");
-	update_hero(C_UP);
-    httpd_resp_send_chunk(req, NULL, 0);
-    return ESP_OK;
-}
+static esp_err_t http_plane_action(httpd_req_t *req) {
+	ESP_LOGI(TAG, " http post wifi");
+    char buf[100] = {0x00};
+    int ret, remaining = req->content_len;
+    while (remaining > 0) {
+        /* Read the data for the request */
+        if ((ret = httpd_req_recv(req, buf,
+                        MIN(remaining, sizeof(buf)))) <= 0) {
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                /* Retry receiving if timeout occurred */
+                continue;
+            }
+            return ESP_FAIL;
+        }
+        remaining -= ret;
+        /* Log data received */
+        ESP_LOGI(TAG, "Receive: %.*s", ret, buf);
+    }
+	if (0 == strncmp(buf, "up", strlen("up"))) {
+		update_hero(C_UP);
+	}else if (0 == strncmp(buf, "left", strlen("left"))) {
+		update_hero(C_LEFT);
+	}else if (0 == strncmp(buf, "right", strlen("right"))) {
+		update_hero(C_RIGHT);
+	}else if (0 == strncmp(buf, "down", strlen("down"))) {
+		update_hero(C_DOWN);
+	}else if (0 == strncmp(buf, "shoot", strlen("shoot"))) {
+		update_hero(C_SHOOT);
+	}
 
-static esp_err_t http_put_plane_down(httpd_req_t *req) {
-	ESP_LOGI(TAG, " Action Down");
-	update_hero(C_DOWN);
-    httpd_resp_send_chunk(req, NULL, 0);
-    return ESP_OK;
-}
-
-static esp_err_t http_put_plane_left(httpd_req_t *req) {
-	ESP_LOGI(TAG, " Action Left");
-	update_hero(C_LEFT);
-    httpd_resp_send_chunk(req, NULL, 0);
-    return ESP_OK;
-}
-
-static esp_err_t http_put_plane_right(httpd_req_t *req) {
-	ESP_LOGI(TAG, " Action Right");
-	update_hero(C_RIGHT);
-    httpd_resp_send_chunk(req, NULL, 0);
-    return ESP_OK;
-}
-
-static esp_err_t http_put_plane_shoot(httpd_req_t *req) {
-	ESP_LOGI(TAG, " Action Shoot");
-	update_hero(C_SHOOT);
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
@@ -171,9 +170,7 @@ static esp_err_t http_post_wifi(httpd_req_t *req) {
         }
         remaining -= ret;
         /* Log data received */
-        ESP_LOGI(TAG, "=========== RECEIVED DATA ==========");
-        ESP_LOGI(TAG, "%.*s", ret, buf);
-        ESP_LOGI(TAG, "====================================");
+        ESP_LOGI(TAG, "Receive: %.*s", ret, buf);
     }
 	ESP_LOGI(TAG, "Buff len %d", strlen(buf));
 	if (strlen(buf) > 0) {
@@ -212,33 +209,9 @@ httpd_uri_t basic_handlers[] = {
 		.user_ctx  = NULL
 	},
 	{
-		.uri       = "/plane/up",
+		.uri       = "/plane/action",
 		.method    = HTTP_PUT,
-		.handler   = http_put_plane_up,
-		.user_ctx  = NULL
-	},
-	{
-		.uri       = "/plane/down",
-		.method    = HTTP_PUT,
-		.handler   = http_put_plane_down,
-		.user_ctx  = NULL
-	},
-	{
-		.uri       = "/plane/left",
-		.method    = HTTP_PUT,
-		.handler   = http_put_plane_left,
-		.user_ctx  = NULL
-	},
-	{
-		.uri       = "/plane/right",
-		.method    = HTTP_PUT,
-		.handler   = http_put_plane_right,
-		.user_ctx  = NULL
-	},
-	{
-		.uri       = "/plane/shoot",
-		.method    = HTTP_PUT,
-		.handler   = http_put_plane_shoot,
+		.handler   = http_plane_action,
 		.user_ctx  = NULL
 	}
 };
